@@ -1,75 +1,31 @@
-# HCT Survival Prediction — Tabular ML for Clinical Decision Support
+# HCT survival prediction: data preparation
 
-> Predicting post-transplant survival outcomes for Hematopoietic Cell Transplantation patients using ensemble ML
+Work in progress on the CIBMTR "Equity in post-HCT Survival Predictions" Kaggle competition: predicting outcomes for patients receiving a hematopoietic cell transplant.
 
----
+## What is in this repository today
 
-## Overview
+`notebooks/model.ipynb` contains the data preparation stage only:
 
-A machine learning system for predicting survival outcomes in patients undergoing **Hematopoietic Cell Transplantation (HCT)** — a high-stakes medical procedure where early outcome prediction directly impacts clinical management. Built on the CIBMTR dataset from the Kaggle Equity in Healthcare AI competition.
+- Drops identifier and leakage prone columns (`ID`, `efs_time`, and sparse match and cytogenetic detail columns).
+- One hot encodes eight categorical clinical fields (for example conditioning intensity, graft type, primary disease, donor relation).
+- Label encodes sixteen HLA match fields.
+- Imputes and standardises four numeric fields (patient age, donor age, comorbidity score, Karnofsky score).
+- Holds out 500 rows as an unseen check set before fitting the pipeline.
+- Wraps all of it in a reusable scikit-learn `ColumnTransformer` pipeline.
 
----
+The output is a fully numeric table of 28,300 rows and 94 columns, ready for modelling.
 
-## Technical Approach
+## What is not here yet
 
-### Feature Engineering
+No model has been trained in this repository, so there are no scores to report. Planned next steps: gradient boosted models (LightGBM, XGBoost, CatBoost) with stratified cross validation, scored with the competition's stratified concordance index, plus SHAP feature importance.
 
-```
-Raw Clinical Data
-├── Continuous: age, lab values, days-to-transplant
-├── Categorical: disease type, donor match, conditioning regimen
-├── Ordinal: comorbidity scores, disease risk index
-└── Derived: interaction terms (age × disease risk), missingness indicators
-```
+## Data
 
-Key decisions:
-- **Missing values**: Missingness indicators + median imputation (missingness is clinically informative)
-- **Encoding**: Target encoding for high-cardinality categoricals
-- **Scaling**: RobustScaler to handle outliers in lab values
+The competition data is not included, because the competition rules do not allow redistributing it. Download `train.csv`, `test.csv` and `data_dictionary.csv` from the [competition page](https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions/data) and place them in `data/`.
 
-### Models
+## Stack
 
-| Model | CV c-statistic | Notes |
-|---|---|---|
-| LightGBM | **0.692** | Best single model |
-| XGBoost | 0.681 | Strong on dense features |
-| CatBoost | 0.678 | Handles categoricals natively |
-| Random Forest | 0.661 | Baseline |
-| Balanced RF | 0.659 | Better minority class recall |
-
-Final predictions: stacked ensemble (LightGBM + XGBoost → logistic meta-learner).
-
----
-
-## Results
-
-- Best CV c-statistic: **0.692**
-- Outperforms HCT-CI clinical scoring baseline (~0.61 in literature)
-
----
-
-## Technical Stack
-
-- **ML**: LightGBM, XGBoost, CatBoost, scikit-learn
-- **Evaluation**: Stratified k-fold, calibration curves, subgroup analysis
-- **Platform**: Kaggle notebooks
-
----
-
-## Repo Structure
-
-```
-HCT-survival-prediction/
-├── data/processed/
-├── notebooks/
-│   ├── 01_eda.ipynb
-│   ├── 02_feature_eng.ipynb
-│   ├── 03_modeling.ipynb
-│   └── 04_ensemble.ipynb
-└── README.md
-```
-
----
+Python, pandas, scikit-learn.
 
 ## License
 
